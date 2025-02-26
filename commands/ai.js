@@ -5,7 +5,7 @@ const { AssemblyAI } = require('assemblyai');
 const axios = require('axios');
 const react = require("react");
 const { gpt } = require('../lib/ai')
-const sophia = require('sophia');
+let sophia;
 // AssemblyAI setup
 const client = new AssemblyAI({
   apiKey: 'ffb8372913cb4f0299ebb7a34d41656e', // Replace with your AssemblyAI API key
@@ -103,7 +103,7 @@ await console.waReact(null,message.key)
     });
   }
 }
-
+if(!sophia) sophia = require('sophia')
 sophia({
   name: 'gpt',
   description: 'Chat with GPT',
