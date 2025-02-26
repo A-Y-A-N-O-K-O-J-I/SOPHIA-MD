@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: sophia-md
+    repo: https://github.com/A-Y-A-N-O-K-O-J-I/SOPHIA-MD.git
+    branch: main
+    env: docker
+    dockerfilePath: Dockerfile
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: SESSION_ID
+        sync: false
+        required: true
+      - key: AUTO_LIKE_STATUS
+        sync: false
+        required: true
+        value: "false"
+      - key: MODE
+        sync: false
+        required: true
+        value: "private"
+      - key: PREFIX
+        sync: false
+        required: true
+        value: "."
+      - key: AUTO_LIKE_EMOJI
+        sync: false
+        value: "🌚"
+      - key: FULL_LOGS
+        sync: false
+        value: "false"
+      - key: IS_RENDER
+        sync: false
+        value: "true"
