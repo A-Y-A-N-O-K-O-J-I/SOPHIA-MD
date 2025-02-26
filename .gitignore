@@ -1,0 +1,13 @@
+node_modules/
+auth/
+baileys_store.json
+config.env
+local_storage/
+bin/
+temp/
+lib/database/
+# managed by open-wa
+**.data.json
+**.node-persist**
+**_IGNORE_**
+# end managed by open-wa
