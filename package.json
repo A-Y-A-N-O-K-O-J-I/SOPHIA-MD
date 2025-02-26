@@ -1,7 +1,7 @@
 {
   "name": "SOPHIA-MD",
-  "version": "1.3.11",
-  "description": "WhatsApp bot powered by @whiskysockets/baileys",
+  "version": "1.0.0",
+  "description": "WhatsApp bot inspired by sophia",
   "main": "index.js",
   "scripts": {
     "start": "pm2 start . --attach --name SOPHIA-MD",

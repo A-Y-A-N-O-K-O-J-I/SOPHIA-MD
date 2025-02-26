@@ -1,5 +1,6 @@
 const Command = require('../lib/Command'); 
-const fs = require('fs')
+const fs = require('fs');
+const { version } = require('../package.json');
 const { commands } = require('../lib/commandHandler');
 const os = require('os');
 const moment = require('moment'); 
@@ -57,7 +58,7 @@ const listCommands = async (sock, message) => {
 ║   
 \`\`\`
 ➛OWNER: ${owner}
-➛VERSION: 1.0.0
+➛VERSION:${version}
 ➛Commands: ${commands.size}
 ➛Uptime: ${uptime}
 ➛RAM: ${memoryUsage}
