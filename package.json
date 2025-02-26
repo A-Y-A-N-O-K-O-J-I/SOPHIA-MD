@@ -1,6 +1,6 @@
 {
   "name": "SOPHIA-MD",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "WhatsApp bot inspired by sophia",
   "main": "index.js",
   "scripts": {
