@@ -10,6 +10,7 @@ services:
     envVars:
       - key: SESSION_ID
         required: true
+        value:""
       - key: AUTO_LIKE_STATUS
         required: true
         value: "false"
