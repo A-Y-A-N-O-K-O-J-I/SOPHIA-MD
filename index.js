@@ -2,7 +2,10 @@ const {handlerPrefix} = require('./lib/listener')
 const config = require('./config')
 const express = require('express');
 const connectionLogic = require('./lib/connect');
-
+const path = require('path');
+const {existsSync} = require('fs');
+const configPath = path.join(__dirname, './config.env');
+if (existsSync(configPath)) require('dotenv').config({ path: configPath,override:true });
 global.startTime = Date.now();
 require('./lib/mediaHelper');
 require('module-alias/register');
