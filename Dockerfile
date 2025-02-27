@@ -1,18 +1,7 @@
-FROM node:lts-buster
-
-RUN apt-get update && \
-    apt-get install -y \
-    ffmpeg \
-    libvips-dev \
-    libwebp-dev \
-    && rm -rf /var/lib/apt/lists/*
-
+FROM quay.io/ayanokojix2306/kojixsophia:latest
+RUN git clone https://github.com/A-Y-A-N-O-K-O-J-I/SOPHIA-MD /sophia
+RUN chown -R node:node /sophia
+USER node
 WORKDIR /sophia
-
-COPY package*.json ./
-
 RUN npm install
-
-COPY . .
-
-CMD ["pm2-runtime", "start", ".", "--name", "SOPHIA-MD", "--watch"]
+CMD ["sh", "-c", "npm start"]
