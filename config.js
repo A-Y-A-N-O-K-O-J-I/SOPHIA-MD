@@ -20,5 +20,5 @@ module.exports = {
     PORT: process.env.PORT || 8000,
     FULL_LOGS: process.env.FULL_LOGS ? toBool(process.env.FULL_LOGS) : false,
     RENDER_URL: process.env.RENDER_APP_URL || '',
-    RENDER: process.env.IS_RENDER ? toBool(process.env.IS_RENDER) : true
+    RENDER: process.env.IS_RENDER ? toBool(process.env.IS_RENDER) : false
 };
