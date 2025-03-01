@@ -80,11 +80,16 @@ const listCommands = async (sock, message) => {
 	 // image: fs.readFileSync(imagePath),
 	  text:responseText.trim(),
 	  contextInfo: {
+	    forwardedNewsletterMessageInfo:{
+      newsletterJid: "120363368032185473@newsletter",
+      serverMessageId:624,
+      newsletterName: "SOPHIA-MD"
+    },
 	    externalAdReply: {
                  title: 'SOPHIA-MD',
-                thumbnail: fs.readFileSync(imagePath),  // Optimized logo buffer
-              showAdAttribution: true,  // Show attribution for the ad
-               sourceUrl: 'https://whatsapp.com/channel/0029VasFQjXICVfoEId0lq0Q',  // URL for the ad
+                thumbnail: fs.readFileSync(imagePath),
+                sourceUrl: "https://whatsapp.com/channel/0029VasFQjXICVfoEId0lq0Q",
+               showAdAttribution: true,
                 mediaType: 1,                
               renderLargerThumbnail: true,
             },
