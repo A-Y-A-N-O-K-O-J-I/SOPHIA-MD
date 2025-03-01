@@ -1,5 +1,4 @@
 const styles = require('../lib/fancy');  // Assuming fancy.js is in lib folder
-const { downloadMedia } = require('../lib/downloadMedia'); // Your downloader function
 const sophia = require("sophia")
 const fancyFonts = [
   "randomStyle", "strikeThrough", "wingdings", "vaporwave", "typewriter",
@@ -15,7 +14,10 @@ const fancyFonts = [
   "fancy24", "fancy25", "fancy26", "fancy27", "fancy28",
   "fancy29", "fancy30", "fancy31", "fancy32", "fancy33"
 ];
-
+let downloadMedia;
+if(!downloadMedia){
+downloadMedia = require('../lib/downloadMedia');
+}
 sophia({
   name: "fancy",
   description: "Stylish text/fonts",
@@ -58,7 +60,7 @@ sophia({
     } else if (quoted.imageMessage || quoted.videoMessage) {
       // Image/Video - download media and resend with fancy caption
       const buffer = await downloadMedia(message);
-      const caption = applyStyle(quoted.imageMessage.caption || quoted.videoMessage.caption || ""); // apply to caption
+      const caption = applyStyle(quoted.imageMessage?.caption || quoted.videoMessage?.caption || ""); // apply to caption
       const mediaType = quoted.imageMessage ? 'image' : 'video';
 
       await sock.sendMessage(message.key.remoteJid, {

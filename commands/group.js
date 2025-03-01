@@ -138,7 +138,7 @@ const tag = async (sock, message, match) => {
 
       // Extract text from the quoted message
       if (quotedInfo.type === "text" && quotedInfo.quotedMessage) {
-        match = quotedInfo.quotedMessage.conversation;
+        match = quotedInfo.quotedMessage.conversation ||quotedInfo.quotedMessage.extendedTextMessage.text ;
       }
     }
 
