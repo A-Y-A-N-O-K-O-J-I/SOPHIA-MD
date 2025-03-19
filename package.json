@@ -4,7 +4,7 @@
   "description": "WhatsApp bot inspired by sophia",
   "main": "index.js",
   "scripts": {
-    "start": "pm2 start . --attach --name SOPHIA-MD",
+    "start": "pm2 delete SOPHIA-MD; pm2 start index.js --attach --name SOPHIA-MD",
     "run": "pm2 start . --deep-monitoring --attach --name SOPHIA-MD",
     "stop": "pm2 stop SOPHIA-MD",
     "restart": "pm2 restart SOPHIA-MD",
