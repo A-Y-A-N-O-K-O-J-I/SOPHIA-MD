@@ -6,6 +6,7 @@ local_storage/
 bin/
 temp/
 lib/database/
+sessions.db
 # managed by open-wa
 **.data.json
 **.node-persist**

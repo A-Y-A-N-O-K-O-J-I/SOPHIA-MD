@@ -16,7 +16,7 @@ const command = new Command(
         if (fileName) {
           await  console.wa(`📂 The command *${commandName}* is located in the file: *${fileName}*`,message);
         } else {
-          await  console.wa(`❌ Command *${commandName}* not found. Make sure it exists and is registered.`);
+          await  console.wa(`❌ Command *${commandName}* not found. Make sure it exists and is registered.`,message);
         }
     },
     'private', // Access level

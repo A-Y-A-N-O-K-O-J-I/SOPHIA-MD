@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
 const { parsePhoneNumberFromString } = require('libphonenumber-js');
-const { downloadMediaMessage } = require('@whiskeysockets/baileys');
+const { downloadMediaMessage } = require('baileys');
 const config = require('../config');
 const Command = require('../lib/Command');
 

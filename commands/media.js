@@ -1,4 +1,4 @@
-const { downloadMediaMessage } = require('@whiskeysockets/baileys');
+const { downloadMediaMessage } = require('baileys');
 const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');

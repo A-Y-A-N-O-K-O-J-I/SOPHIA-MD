@@ -2,7 +2,9 @@ const Command = require('../lib/Command');
 const {isAdmin,decodeJid,parsedJid,isInGroup,delay} = require('../lib/functions');
 const {isQuotedMessage, getQuotedInfo} = require('../lib/quotedMessageHandler');
 const sophia = require('../lib/sophia');
+const react = require("react");
 const { enableLinkDetection, disableLinkDetection } = require('../lib/antilink');
+const { enableTagDetection, disableTagDetection } = require('../lib/antitag');
 sophia({
   name:"mute",
   description:"To mute a group",
@@ -23,10 +25,10 @@ sophia({
     try{
    const jid = message.key.remoteJid;
 await sock.groupSettingUpdate(jid, 'announcement')
-await console.wa('_muted_',message)
-    }catch(e){
-      console.error('error',e);
-      await console.wa(e.message,message)
+await console.wa('_muted._',message)
+}catch(e){
+  console.error('error',e);
+  await console.wa(e.message,message)
     }
   },
   accessLevel:'private',
@@ -38,22 +40,23 @@ sophia({
   name:"unmute",
   description:"To unmute a group",
   execute: async function (sock,message){
-      if(!isInGroup(message)){
+    if(!isInGroup(message)){
       await console.wa('_This is for groups only_',message)
       return;
     }
     const isadmin = await  isAdmin(
-     message.key.remoteJid,
-     message.key?.participant,
-     sock
-     )
+      message.key.remoteJid,
+      message.key?.participant,
+      sock
+    )
     if(!isadmin){
       await console.wa('_I am not admin_',message)
       return;
     }
     try{
-   const jid = message.key.remoteJid;
-await sock.groupSettingUpdate(jid, 'not_announcement')
+      const jid = message.key.remoteJid;
+      await sock.groupSettingUpdate(jid, 'not_announcement')
+      await console.wa('_unmuted._',message)
     }catch(e){
       console.error('error',e);
       await console.wa(e.message,message)
@@ -96,7 +99,7 @@ const leaveGroup = async (sock, message) => {
         // Restrict the command to the bot itself
         if (participantId !== botId) {
             await sock.sendMessage(message.key.remoteJid, {
-                text: "⚠️ Only the bot can use this command.",
+                text: "_Only the bot can use this command._",
 		    
             });
             return;
@@ -110,8 +113,8 @@ await delay(1000)
 
         // Leave the group
         await sock.groupLeave(message.key.remoteJid);
-
-        await sock.sendMessage(sock.user.id, {
+        const userJid = sock.user.lid.split(":")[0] + "@lid";
+        await sock.sendMessage(userJid, {
             text: "_Left successfully_"},{quoted:message});
     } catch (error) {
         console.error("Error in leaveGroup command:", error);
@@ -138,7 +141,8 @@ const tag = async (sock, message, match) => {
 
       // Extract text from the quoted message
       if (quotedInfo.type === "text" && quotedInfo.quotedMessage) {
-        match = quotedInfo.quotedMessage.conversation ||quotedInfo.quotedMessage.extendedTextMessage.text ;
+        match = quotedInfo.quotedMessage.conversation ||quotedInfo.quotedMessage.extendedTextMessage.text;
+	 match = match.replace(/\r?\n/g, "\n")
       }
     }
 
@@ -270,7 +274,7 @@ sophia({
 
     // Ensure the JIDs are formatted correctly
     const ensureJidFormat = (jid) =>
-      jid.endsWith("@s.whatsapp.net") ? jid : jid + "@s.whatsapp.net";
+      jid.endsWith("@lid") ? jid : jid + "@lid";
     mentionedJid = mentionedJid.map(ensureJidFormat);
 
     // Handle case when there's no valid JID
@@ -280,9 +284,9 @@ sophia({
       });
     }
 
-    // Check if the bot itself is being promoted
-    const botJid = decodeJid(sock.user.id);
-    if (mentionedJid.includes(botJid)) {
+    // Check if the bot itself is being demoted
+    const botJid = sock.user.lid.split(":")[0] + "@lid";
+      if (mentionedJid.includes(botJid)) {
       return await sock.sendMessage(message.key.remoteJid, {
         text: "_I cannot demote myself._",
       });
@@ -373,7 +377,7 @@ sophia({
 
     // Ensure the JIDs are formatted correctly
     const ensureJidFormat = (jid) =>
-      jid.endsWith("@s.whatsapp.net") ? jid : jid + "@s.whatsapp.net";
+      jid.endsWith("@lid") ? jid : jid + "@lid";
     mentionedJid = mentionedJid.map(ensureJidFormat);
 
     // Handle case when there's no valid JID
@@ -384,7 +388,7 @@ sophia({
     }
 
     // Check if the bot itself is being kicked
-    const botJid = decodeJid(sock.user.id);
+    const botJid = sock.user.lid.split(":")[0] + "@lid";
     if (mentionedJid.includes(botJid)) {
       return await sock.sendMessage(message.key.remoteJid, {
         text: "_I cannot kick myself._",
@@ -483,7 +487,7 @@ sophia({
 
     // Ensure the JIDs are formatted correctly
     const ensureJidFormat = (jid) =>
-      jid.endsWith("@s.whatsapp.net") ? jid : jid + "@s.whatsapp.net";
+      jid.endsWith("@lid") ? jid : jid + "@lid";
     mentionedJid = mentionedJid.map(ensureJidFormat);
 
     // Handle case when there's no valid JID
@@ -494,7 +498,7 @@ sophia({
     }
 
     // Check if the bot itself is being promoted
-    const botJid = decodeJid(sock.user.id);
+    const botJid = sock.user.lid.split(":")[0] + "@lid";
     if (mentionedJid.includes(botJid)) {
       return await sock.sendMessage(message.key.remoteJid, {
         text: "_I cannot promote myself._",
@@ -504,10 +508,12 @@ sophia({
     // Check if the target user is the group owner
     const groupMetadata = await sock.groupMetadata(message.key.remoteJid);
     const ownerJid = groupMetadata.owner || null;
-    if (mentionedJid.includes(ownerJid)) {
-      return await sock.sendMessage(message.key.remoteJid, {
-        text: "_I cannot promote the group owner._",
-      });
+    const isOwnerAdmin = await isAdmin(message.key?.remoteJid, ownerJid,sock)
+    if(isOwnerAdmin && mentionedJid.includes(ownerJid)){
+        await sock.sendMessage(message.key.remoteJid, {
+          text: "_I cannot promote the group owner._",
+        });
+      return;
     }
   // Promote the participant(s)
     await sock.groupParticipantsUpdate(
@@ -599,10 +605,95 @@ sophia({
             disableLinkDetection(message.key.remoteJid);
             await console.wa('Link detection has been disabled in this group.',message);
         } else {
-            await console.wa( 'Usage: .test <on|off>',message);
+            await console.wa( 'Usage: .antilink <on|off>',message);
         }
     },
     accessLevel: 'private',
     category: 'Group',
     isGroupOnly: true,
+});
+
+sophia({
+  name: 'resetwarn',
+  description: 'Reset warnings for a user (reply to their message or mention them)',
+  execute: async (sock, message, args) => {
+    await react('p', message);
+    const groupJid = message.key.remoteJid;
+    const isGroup = groupJid.endsWith('@g.us');
+    // Check if command is used in a group
+    if (!isGroup) {
+      await delay(2000);
+      await console.wa("This command can only be used in groups.", message);
+      await delay(1000);
+      await react("e", message);
+      return;
+    }
+
+    // Check for quoted message (reply)
+    const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.participant;
+    
+    // Check for mentioned user
+    const mentionedJid = message.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
+
+    // Participant is either from quoted message or mentioned
+    const participant = quotedMessage || mentionedJid;
+    console.log(participant)
+    if (!participant) {
+      await delay(2000);
+      await console.wa("Please reply to a user's message or mention them to reset their warnings.\nUsage: Reply to message + .resetwarn OR .resetwarn @user", message);
+      await delay(1000);
+      await react("e", message);
+      return;
+    }
+
+    try {
+      const { resetWarning, getWarningCount } = require('../lib/warnings'); // Update path
+      
+      const previousCount = getWarningCount(groupJid, participant);
+      resetWarning(groupJid, participant);
+
+      await react("c", message);
+      await console.wa(`✅ Warnings reset for @${participant.split('@')[0]}.\nPrevious warnings: ${previousCount}`, message);
+    } catch (error) {
+      await react("e", message);
+      console.error("Reset warn command error:", error);
+      await console.wa(`Error resetting warnings: ${error.message}`, message);
+    }
+  },
+  accessLevel: 'private',
+  category: 'Group',
+  isGroupOnly: true
+});
+
+sophia({
+  name: "antitag",
+  description: "Remove @all messages",
+  execute: async function antiTagAll(sock, message, args) {
+    if (!message.key.remoteJid.endsWith("@g.us")) {
+      await console.wa("This command can only be used in groups.", message);
+      return;
+    }
+    const isadmin = await isAdmin(
+      message.key.remoteJid,
+      message.key?.participant,
+      sock,
+    );
+    if (!isadmin) {
+      await console.wa("_You are not an admin_", message);
+      return;
+    }
+    const action = args[0]?.toLowerCase();
+    if (action === 'on') {
+            enableTagDetection(message.key.remoteJid);
+            await console.wa( 'Tag detection has been enabled in this group.',message);
+        } else if (action === 'off') {
+            disableTagDetection(message.key.remoteJid);
+            await console.wa('Tag detection has been disabled in this group.',message);
+        } else {
+            await console.wa( 'Usage: .antitah <on|off>',message);
+        }
+  },
+  accessLevel:"private",
+  category:"Group",
+  isGroupOnly:true
 });

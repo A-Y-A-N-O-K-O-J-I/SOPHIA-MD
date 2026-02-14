@@ -5,7 +5,8 @@ const { commands } = require('../lib/commandHandler');
 const os = require('os');
 const moment = require('moment'); 
 const config = require('../config');
-const path = require('path')
+const path = require('path');
+
 // Utility function to check memory usage
 function formatMemoryUsage() {
     const totalMemory = os.totalmem() / 1e9; // in GB
@@ -19,13 +20,14 @@ function formatUptime() {
     return uptime;
 }
 
-// Database check (to determine if PostgreSQL, MongoDB, or local is used)
+// Database check
 function getDatabaseInfo() {
-    // Assuming that your config has a method or value that tells you the DB being used
     const db = config.DATABASE_URL ? "PostgreSQL" : "MongoDB (or Local)";
     return db;
 }
-const imagePath = path.join(__dirname,"..","assets","menu.jpg")
+
+const imagePath = path.join(__dirname, "..", "assets", "menu.jpg");
+
 const listCommands = async (sock, message) => {
     try {
         // Get system info
@@ -34,75 +36,71 @@ const listCommands = async (sock, message) => {
         const memoryUsage = formatMemoryUsage();
         const currentTime = moment().format('hh:mm:ss A');
         const currentDate = moment().format('DD/MM/YYYY');
-        const db = getDatabaseInfo();  // Get DB used
+        const db = getDatabaseInfo();
 
-        // Group commands by category with a default category of 'General'
+        // Group commands by category
         const categorizedCommands = {};
         Array.from(commands.values()).forEach((cmd) => {
-            const category = cmd.category || 'General';  // Default category as 'General' if undefined
+            const category = cmd.category || 'General';
             if (!categorizedCommands[category]) {
                 categorizedCommands[category] = [];
             }
-            const commandName = cmd.name ? cmd.name.toUpperCase() : 'UNKNOWN COMMAND';  // Ensure name exists
-            categorizedCommands[category].push(`│  *${commandName}*`);
+            const commandName = cmd.name ? cmd.name.toLowerCase() : 'unknown';
+            categorizedCommands[category].push(commandName);
         });
 
-        // Format the menu
-        let responseText = 
-	`≿━━━━༺❀𝑺𝑶𝑷𝑯𝑰𝑨-𝑴𝑫༻━━━━≾
-╔═══.·:·.☽✧ ✦ ✧☾.·:·.═══╗
-☆   MADE BY AYANOKOJI☆
-╚═══.·:·.☽✧ ✦ ✧☾.·:·.═══╝
+        // Build the menu
+        let responseText = `*SOPHIA-MD v${version}*\n\n`;
+        
+        // Bot info section
+        responseText += `┌─ *BOT INFO*\n`;
+        responseText += `│ Owner: ${owner}\n`;
+        responseText += `│ Commands: ${commands.size}\n`;
+        responseText += `│ Uptime: ${uptime}\n`;
+        responseText += `│ RAM: ${memoryUsage}\n`;
+        responseText += `│ Database: ${db}\n`;
+        responseText += `│ Time: ${currentTime}\n`;
+        responseText += `│ Date: ${currentDate}\n`;
+        responseText += `└───────────\n\n`;
 
-╔══════════════════════╗
-║   
-\`\`\`
-➛OWNER: ${owner}
-➛VERSION:${version}
-➛Commands: ${commands.size}
-➛Uptime: ${uptime}
-➛RAM: ${memoryUsage}
-➛DB: ${db}
-➛Time: ${currentTime}
-➛Date: ${currentDate}
-\`\`\`
-╚══════════════════════╝
-
-`;
-
-        // List Commands by Category
+        // Commands by category
         for (const [category, cmds] of Object.entries(categorizedCommands)) {
-            responseText += `\n╔═══.·:·.☽✧ ✦ ${category.toUpperCase()} ✧☾.·:·.\n`;
-            responseText += `|☞|${cmds.join('\n|☞|')}\n`;
-            responseText += `╚═══.·:·.☽✧ ✦ ✧☾.·:·.\n`;
+            responseText += `┌─ *${category.toUpperCase()}*\n`;
+            cmds.forEach(cmd => {
+                responseText += `│ • ${cmd}\n`;
+            });
+            responseText += `└───────────\n\n`;
         }
-	await sock.sendMessage(message.key.remoteJid,{
-	 // image: fs.readFileSync(imagePath),
-	  text:responseText.trim(),
-	  contextInfo: {
-	    forwardedNewsletterMessageInfo:{
-      newsletterJid: "120363368032185473@newsletter",
-      serverMessageId:624,
-      newsletterName: "SOPHIA-MD"
-    },
-	    externalAdReply: {
-                 title: 'SOPHIA-MD',
-                thumbnail: fs.readFileSync(imagePath),
-                sourceUrl: "https://whatsapp.com/channel/0029VasFQjXICVfoEId0lq0Q",
-               showAdAttribution: true,
-                mediaType: 1,                
-              renderLargerThumbnail: true,
-            },
-	    isForwarded:true,
-	    forwardingScore:1000
-	  }
-	})
+
+        responseText += `_Type ${config.PREFIX}help <command> for more info_`;
+
+        await sock.sendMessage(message.key.remoteJid, {
+            text: responseText.trim(),
+            contextInfo: {
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: "120363368032185473@newsletter",
+                    serverMessageId: 624,
+                    newsletterName: "SOPHIA-MD"
+                },
+                /* externalAdReply: {
+                    title: 'SOPHIA-MD',
+                    thumbnail: fs.readFileSync(imagePath),
+                    sourceUrl: "https://whatsapp.com/channel/0029VasFQjXICVfoEId0lq0Q",
+                    showAdAttribution: true,
+                    mediaType: 1,
+                    renderLargerThumbnail: true,
+                }, */
+                isForwarded: true,
+                forwardingScore: 1000
+            }
+        });
     } catch (error) {
         console.error('Error while listing commands:', error);
-        await sock.sendMessage(message.key.remoteJid, { text: '☠️ Failed to list commands.' });
+        await sock.sendMessage(message.key.remoteJid, { 
+            text: '❌ Failed to list commands.' 
+        });
     }
 };
-
 
 const listCommand = new Command('menu', 'List all available commands', listCommands);
 module.exports = { listCommand };

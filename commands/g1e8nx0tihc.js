@@ -11,7 +11,7 @@ const boomCommand = new Command(
 
 // The boomCommandFunction should be defined as the function to send the carousel message:
 async function boomCommandFunction(sock, message) {
-  const { proto, generateWAMessageFromContent, prepareWAMessageMedia } = require('@whiskeysockets/baileys');
+  const { proto, generateWAMessageFromContent, prepareWAMessageMedia } = require('baileys');
 
   const sendBoomMessage = async (jid) => {
     const slides = [

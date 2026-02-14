@@ -1,5 +1,5 @@
 const sophia = require('sophia');
-const downloadMedia = require('../lib/downloadMedia');
+const downloadMedia = require('../lib/downloadMedia')
 const react = require('react');
 
 sophia({
@@ -47,8 +47,8 @@ sophia({
         if (content.caption) options.caption = content.caption;
       }
 
-      
-      const destination = message.key.fromMe ? sock.user.id : message.key.remoteJid;
+      const userJid = sock.user.lid.split(":")[0] + "@lid";
+      const destination = message.key.fromMe ? userJid : message.key.remoteJid;
 
       await sock.sendMessage(destination, {
         [mediaType]: buffer,

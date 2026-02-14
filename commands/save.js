@@ -1,7 +1,7 @@
 const Command = require('../lib/Command');
 const fs = require('fs');
 const path = require('path');
-const { downloadMediaMessage } = require('@whiskeysockets/baileys');
+const { downloadMediaMessage } = require('baileys');
 const { SUDO } = require('../config');// Use the SUDO numbers from the config
 
 
@@ -20,144 +20,164 @@ async function handleQuotedMedia(sock, message) {
       let mimetype;
       let caption = 'Saved!';
       
-     
       await sock.sendMessage(message.key.remoteJid, { react: { text: '⌛', key: message.key } });
 
+      // Check if it's a group status message with nested media
+      let mediaMessage = quoted;
+      if (quoted?.groupStatusMessageV2?.message) {
+        mediaMessage = quoted.groupStatusMessageV2.message;
+      }
+
       // Image
-      if (quoted?.imageMessage) {
+      if (mediaMessage?.imageMessage) {
         mediaStream = await downloadMediaMessage(
           {
             key: { id: key, remoteJid: message.key.remoteJid, participant },
-            message: quoted,
+            message: { imageMessage: mediaMessage.imageMessage },
           },
-          sock
+          'buffer',
+          {},
+          { logger: console, reuploadRequest: sock.updateMediaMessage }
         );
         filePath = path.join(mediaPath, `image_${Date.now()}.jpg`);
         mimetype = 'image/jpeg';
-        if (quoted?.imageMessage?.caption) {
-          caption = quoted.imageMessage.caption;
+        if (mediaMessage?.imageMessage?.caption) {
+          caption = mediaMessage.imageMessage.caption;
         }
       }
-      // Audio
-      else if (quoted?.audioMessage) {
-        mediaStream = await downloadMediaMessage(
-          {
-            key: { id: key, remoteJid: message.key.remoteJid, participant },
-            message: quoted,
-          },
-          sock
-        );
-        filePath = path.join(mediaPath, `audio_${Date.now()}.mp3`);
-        mimetype = 'audio/mpeg';
-      }
       // Video
-      else if (quoted?.videoMessage) {
+      else if (mediaMessage?.videoMessage) {
         mediaStream = await downloadMediaMessage(
           {
             key: { id: key, remoteJid: message.key.remoteJid, participant },
-            message: quoted,
+            message: { videoMessage: mediaMessage.videoMessage },
           },
-          sock
+          'buffer',
+          {},
+          { logger: console, reuploadRequest: sock.updateMediaMessage }
         );
         filePath = path.join(mediaPath, `video_${Date.now()}.mp4`);
         mimetype = 'video/mp4';
-        if (quoted?.videoMessage?.caption) {
-          caption = quoted.videoMessage.caption;
+        if (mediaMessage?.videoMessage?.caption) {
+          caption = mediaMessage.videoMessage.caption;
+        }
+      }
+      // Audio
+      else if (mediaMessage?.audioMessage) {
+        const isVoice = mediaMessage.audioMessage.ptt;
+        mediaStream = await downloadMediaMessage(
+          {
+            key: { id: key, remoteJid: message.key.remoteJid, participant },
+            message: { audioMessage: mediaMessage.audioMessage },
+          },
+          'buffer',
+          {},
+          { logger: console, reuploadRequest: sock.updateMediaMessage }
+        );
+        
+        if (isVoice) {
+          filePath = path.join(mediaPath, `voice_${Date.now()}.ogg`);
+          mimetype = 'audio/ogg; codecs=opus';
+        } else {
+          filePath = path.join(mediaPath, `audio_${Date.now()}.mp3`);
+          mimetype = 'audio/mpeg';
         }
       }
       // Document
-      else if (quoted?.documentMessage) {
+      else if (mediaMessage?.documentMessage) {
         mediaStream = await downloadMediaMessage(
           {
             key: { id: key, remoteJid: message.key.remoteJid, participant },
-            message: quoted,
+            message: { documentMessage: mediaMessage.documentMessage },
           },
-          sock
+          'buffer',
+          {},
+          { logger: console, reuploadRequest: sock.updateMediaMessage }
         );
-        filePath = path.join(mediaPath, `document_${Date.now()}.pdf`);
-        mimetype = 'application/pdf'; // Adjust if it's another type of document
-      }
-      // Voice Note
-      else if (quoted?.audioMessage) {
-        mediaStream = await downloadMediaMessage(
-          {
-            key: { id: key, remoteJid: message.key.remoteJid, participant },
-            message: quoted,
-          },
-          sock
-        );
-        filePath = path.join(mediaPath, `voice_${Date.now()}.ogg`);
-        mimetype = 'audio/ogg;codecs=opus';
+        const fileName = mediaMessage.documentMessage.fileName || `document_${Date.now()}.pdf`;
+        filePath = path.join(mediaPath, fileName);
+        mimetype = mediaMessage.documentMessage.mimetype || 'application/pdf';
       }
       // Sticker
-      else if (quoted?.stickerMessage) {
+      else if (mediaMessage?.stickerMessage) {
         mediaStream = await downloadMediaMessage(
           {
             key: { id: key, remoteJid: message.key.remoteJid, participant },
-            message: quoted,
+            message: { stickerMessage: mediaMessage.stickerMessage },
           },
-          sock
+          'buffer',
+          {},
+          { logger: console, reuploadRequest: sock.updateMediaMessage }
         );
         filePath = path.join(mediaPath, `sticker_${Date.now()}.webp`);
         mimetype = 'image/webp'; 
       }
       
       if (mediaStream) {
-        const writeStream = fs.createWriteStream(filePath);
+        // Write buffer to file
+        fs.writeFileSync(filePath, mediaStream);
 
-        // Pipe the stream to a file
-        await new Promise((resolve, reject) => {
-          mediaStream.pipe(writeStream);
-          mediaStream.on('end', resolve);
-          mediaStream.on('error', reject);
-        });
-
-        // Send the downloaded media to SUDO numbers only
-        // For sticker media, send it as a sticker type
-  if (mimetype === 'image/webp') {
-      await sock.sendMessage(sock.user.id, {
-        sticker: fs.readFileSync(filePath), // Send the media as sticker
-        quoted: message, // Add quoted message for context if needed
-      });
-    
-  } else {
-    // Handle other media types (audio, image, video, etc.
-      await sock.sendMessage(sock.user.id, {
-        [mimetype.split('/')[0]]: { url: filePath },
-        caption,
-        mimetype,
-        quoted: message, // Add quoted message for context if needed
-      });
-  }
+        // Get bot's own JID
+        const userJid = sock.user.lid.split(":")[0] + "@lid";
+        
+        // Send based on media type
+        if (mimetype === 'image/webp') {
+          await sock.sendMessage(userJid, {
+            sticker: fs.readFileSync(filePath),
+          });
+        } else if (mimetype.startsWith('image/')) {
+          await sock.sendMessage(userJid, {
+            image: fs.readFileSync(filePath),
+            caption,
+            mimetype,
+          });
+        } else if (mimetype.startsWith('video/')) {
+          await sock.sendMessage(userJid, {
+            video: fs.readFileSync(filePath),
+            caption,
+            mimetype,
+          });
+        } else if (mimetype.startsWith('audio/')) {
+          await sock.sendMessage(userJid, {
+            audio: fs.readFileSync(filePath),
+            mimetype,
+            ptt: mimetype.includes('ogg'), // Set as voice note if it's ogg
+          });
+        } else if (mimetype.includes('document') || mimetype.includes('pdf')) {
+          await sock.sendMessage(userJid, {
+            document: fs.readFileSync(filePath),
+            mimetype,
+            fileName: path.basename(filePath),
+          });
+        }
 
         // Add success reaction
         await sock.sendMessage(message.key.remoteJid, { react: { text: '✅', key: message.key } });
-        await sock.sendMessage(message.key.remoteJid, { react: { text: null, key: message.key } });
+        setTimeout(async () => {
+          await sock.sendMessage(message.key.remoteJid, { react: { text: '', key: message.key } });
+        }, 2000);
 
         // Clean up the temporary file
         fs.unlinkSync(filePath);
       } else {
         // If no valid media, add error reaction
         await sock.sendMessage(message.key.remoteJid, { react: { text: '❌', key: message.key } });
-        await sock.sendMessage(message.key.remoteJid, { react: { text: null, key: message.key } });
         await sock.sendMessage(message.key.remoteJid, { text: 'No valid media found in the quoted message!' });
       }
     } catch (error) {
       console.error('Error handling quoted media:', error);
-      await sock.sendMessage(message.key.remoteJid, { text: 'Failed to process the quoted media.' });
-      if(fs.existsSync(filePath)){
+      await sock.sendMessage(message.key.remoteJid, { react: { text: '❌', key: message.key } });
+      await sock.sendMessage(message.key.remoteJid, { text: `Failed to process the quoted media: ${error.message}` });
+      if (filePath && fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
       }
-       
     }
   } else {
     // If no quoted media found, add error reaction
     await sock.sendMessage(message.key.remoteJid, { react: { text: '❌', key: message.key } });
-    await sock.sendMessage(message.key.remoteJid, { text: 'No quoted media found!' });
+    await sock.sendMessage(message.key.remoteJid, { text: 'Please reply to a media message with .save' });
   }
 }
-
-
 
 const quotedMediaCommand = new Command('save', 'Send quoted media to SUDO numbers only and add reactions', handleQuotedMedia);
 module.exports = {quotedMediaCommand};

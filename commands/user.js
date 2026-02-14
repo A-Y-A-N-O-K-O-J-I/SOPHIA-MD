@@ -1,7 +1,7 @@
 const Command = require('../lib/Command');
 const {isInGroup} = require('../lib/functions')
 const { isAdmin } = require('../lib/functions');
-const { getDevice } = require('@whiskeysockets/baileys');
+const { getDevice } = require('baileys');
 const sophia = require('../lib/sophia');
 const {exec} = require('child_process')
 let quotedMessageKey;
