@@ -1,5 +1,3 @@
-global.__dirname = __dirname;
-global.__filename = __filename;
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
