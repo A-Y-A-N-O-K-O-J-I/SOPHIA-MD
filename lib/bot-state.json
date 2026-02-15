@@ -1,6 +1,6 @@
 {
-  "paired": true,
+  "paired": false,
   "sessionId": "SOPHIA_MD_SESSION",
   "phoneNumber": null,
-  "lastConnected": "2026-02-15T11:10:06.637Z"
+  "lastConnected": null
 }

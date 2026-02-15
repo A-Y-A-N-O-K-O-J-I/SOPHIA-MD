@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOPHIA-MD | WhatsApp Bot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #8b5cf6;
+            --primary-dark: #7c3aed;
+            --secondary: #ec4899;
+            --bg-dark: #0f172a;
+            --bg-darker: #020617;
+            --bg-card: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --border: #334155;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: var(--bg-darker);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: var(--bg-dark);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .navbar-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--primary);
+        }
+
+        /* Mobile menu button */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Sections */
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* Pairing Section */
+        .hero-section {
+            text-align: center;
+            padding: 4rem 0;
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .status-box {
+            text-align: center;
+            padding: 3rem;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--bg-card), var(--bg-dark));
+            border: 1px solid var(--border);
+        }
+
+        .status-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .status-text {
+            font-size: 1.75rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-description {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.875rem 1.75rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        /* Input */
+        input {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Messages */
+        .message {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            display: none;
+        }
+
+        .message.active {
+            display: block;
+        }
+
+        .message-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+        }
+
+        .message-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        /* Social Links */
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .social-link {
+            padding: 0.75rem 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .social-link:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        /* Commands Section */
+        .commands-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .command-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .command-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-4px);
+        }
+
+        .command-name {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        .command-category {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid var(--primary);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            margin-bottom: 0.75rem;
+            color: var(--primary);
+        }
+
+        .command-description {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .command-access {
+            margin-top: 0.75rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .command-access.public {
+            color: var(--success);
+        }
+
+        .command-access.private {
+            color: var(--danger);
+        }
+
+        /* Search */
+        .search-box {
+            margin: 2rem 0;
+        }
+
+        .category-filter {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin: 1rem 0;
+        }
+
+        .category-btn {
+            padding: 0.5rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .category-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Pairing code display */
+        .pairing-code {
+            font-size: 2.5rem;
+            font-weight: bold;
+            letter-spacing: 0.5rem;
+            color: var(--primary);
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 2px dashed var(--border);
+            margin: 1.5rem 0;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .navbar-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--bg-dark);
+                border-bottom: 1px solid var(--border);
+                flex-direction: column;
+                padding: 1rem;
+                gap: 1rem;
+            }
+
+            .navbar-links.active {
+                display: flex;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .commands-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-brand">SOPHIA-MD</div>
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+        <div class="navbar-links" id="navbarLinks">
+            <a class="nav-link active" onclick="showSection('home')">Home</a>
+            <a class="nav-link" onclick="showSection('commands')">Commands</a>
+            <a class="nav-link" href="https://whatsapp.com/channel/0029VasFQjXICVfoEId0lq0Q" target="_blank">Channel</a>
+            <a class="nav-link" href="https://x.com/AyanokojiWebDev" target="_blank">X (Twitter)</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Home Section (Pairing) -->
+        <section class="section active" id="home">
+            <div class="hero-section">
+                <h1 class="hero-title">SOPHIA-MD</h1>
+                <p class="hero-subtitle">Advanced WhatsApp Bot with 70+ Commands</p>
+            </div>
+
+            <!-- Loading State -->
+            <div class="loading active" id="loadingState">
+                <div class="spinner"></div>
+                <p>Checking bot status...</p>
+            </div>
+
+            <!-- Paired State -->
+            <div id="pairedState" style="display: none;">
+                <div class="status-box">
+                    <div class="status-icon">✅</div>
+                    <div class="status-text">Bot Connected!</div>
+                    <div class="status-description">Your bot is successfully paired and running</div>
+                </div>
+
+                <div class="social-links">
+                    <a href="https://whatsapp.com/channel/0029VasFQjXICVfoEId0lq0Q" class="social-link" target="_blank">
+                        📱 WhatsApp Channel
+                    </a>
+                    <a href="https://x.com/AyanokojiWebDev" class="social-link" target="_blank">
+                        🐦 Follow on X
+                    </a>
+                </div>
+            </div>
+
+            <!-- Not Paired State -->
+            <div id="notPairedState" style="display: none;">
+                <div class="card">
+                    <div class="status-box">
+                        <div class="status-icon">📱</div>
+                        <div class="status-text">Ready to Pair</div>
+                        <div class="status-description">Choose a method to connect your bot</div>
+                    </div>
+
+                    <!-- Pairing Method Selector -->
+                    <div style="display: flex; gap: 1rem; justify-content: center; margin: 2rem 0;">
+                        <button class="btn btn-primary" onclick="showPairingCode()">Pairing Code</button>
+                        <button class="btn btn-secondary" onclick="showQRCode()">QR Code</button>
+                    </div>
+
+                    <!-- Pairing Code Section -->
+                    <div id="pairingCodeSection" style="display: none;">
+                        <input type="tel" id="phoneNumber" placeholder="Enter phone number (e.g., 1234567890)" />
+                        <button class="btn btn-primary" style="width: 100%;" onclick="generatePairingCode()">
+                            Generate Code
+                        </button>
+
+                        <div id="pairingCodeDisplay" style="display: none; margin-top: 1.5rem; text-align: center;">
+                            <p style="color: var(--text-secondary);">Your Pairing Code:</p>
+                            <div class="pairing-code" id="codeValue"></div>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                                Enter this code in WhatsApp Settings → Linked Devices
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- QR Code Section -->
+                    <div id="qrCodeSection" style="display: none; text-align: center;">
+                        <button class="btn btn-primary" onclick="generateQRCode()">Generate QR Code</button>
+
+                        <div id="qrCodeDisplay" style="display: none; margin-top: 1.5rem;">
+                            <img id="qrImage" style="width: 100%; max-width: 300px; border-radius: 8px; border: 2px solid var(--border);" />
+                            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 1rem;">
+                                Scan this QR code with WhatsApp
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="loading" id="pairingLoading">
+                        <div class="spinner"></div>
+                        <p>Processing...</p>
+                    </div>
+
+                    <div class="message message-error" id="errorMessage"></div>
+                    <div class="message message-success" id="successMessage"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Commands Section -->
+        <section class="section" id="commands">
+            <div class="hero-section">
+                <h1 class="hero-title">Bot Commands</h1>
+                <p class="hero-subtitle">Explore all available commands and their usage</p>
+            </div>
+
+            <div class="search-box">
+                <input type="text" id="commandSearch" placeholder="🔍 Search commands..." onkeyup="filterCommands()" />
+            </div>
+
+            <div class="category-filter" id="categoryFilter">
+                <button class="category-btn active" onclick="filterByCategory('all')">All</button>
+                <!-- Categories will be added dynamically -->
+            </div>
+
+            <div class="commands-grid" id="commandsGrid">
+                <!-- Commands will be loaded dynamically -->
+                <div class="loading active">
+                    <div class="spinner"></div>
+                    <p>Loading commands...</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        let allCommands = [];
+        let currentCategory = 'all';
+
+        // Check pairing status on load
+        async function checkStatus() {
+            try {
+                const response = await fetch('/status');
+                const data = await response.json();
+
+                document.getElementById('loadingState').classList.remove('active');
+
+                if (data.paired) {
+                    document.getElementById('pairedState').style.display = 'block';
+                } else {
+                    document.getElementById('notPairedState').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error checking status:', error);
+                document.getElementById('loadingState').classList.remove('active');
+                showError('Failed to check bot status');
+            }
+        }
+
+        // Section navigation
+        function showSection(sectionName) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            
+            document.getElementById(sectionName).classList.add('active');
+            event.target.classList.add('active');
+
+            // Load commands if viewing commands section
+            if (sectionName === 'commands' && allCommands.length === 0) {
+                loadCommands();
+            }
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('navbarLinks').classList.toggle('active');
+        }
+
+        function showPairingCode() {
+            document.getElementById('pairingCodeSection').style.display = 'block';
+            document.getElementById('qrCodeSection').style.display = 'none';
+        }
+
+        function showQRCode() {
+            document.getElementById('qrCodeSection').style.display = 'block';
+            document.getElementById('pairingCodeSection').style.display = 'none';
+        }
+
+        async function generatePairingCode() {
+            const phoneNumber = document.getElementById('phoneNumber').value.trim();
+            if (!phoneNumber) {
+                showError('Please enter a phone number');
+                return;
+            }
+
+            const cleanNumber = phoneNumber.replace(/\D/g, '');
+            if (cleanNumber.length < 10) {
+                showError('Please enter a valid phone number');
+                return;
+            }
+
+            document.getElementById('pairingLoading').classList.add('active');
+            hideMessages();
+
+            try {
+                const response = await fetch(`/pair?number=${cleanNumber}`);
+                const data = await response.json();
+
+                document.getElementById('pairingLoading').classList.remove('active');
+
+                if (data.code) {
+                    document.getElementById('codeValue').textContent = data.code;
+                    document.getElementById('pairingCodeDisplay').style.display = 'block';
+                    showSuccess('Pairing code generated! Enter it in WhatsApp.');
+                    pollPairingStatus();
+                } else if (data.error) {
+                    showError(data.error);
+                } else {
+                    showError(data.message || 'Failed to generate pairing code');
+                }
+            } catch (error) {
+                document.getElementById('pairingLoading').classList.remove('active');
+                showError('Failed to connect to server');
+                console.error('Error:', error);
+            }
+        }
+
+        async function generateQRCode() {
+            document.getElementById('pairingLoading').classList.add('active');
+            hideMessages();
+
+            try {
+                const response = await fetch('/qr');
+                
+                if (response.ok && response.headers.get('content-type')?.includes('image')) {
+                    const blob = await response.blob();
+                    const imageUrl = URL.createObjectURL(blob);
+                    
+                    document.getElementById('qrImage').src = imageUrl;
+                    document.getElementById('qrCodeDisplay').style.display = 'block';
+                    document.getElementById('pairingLoading').classList.remove('active');
+                    showSuccess('QR Code generated! Scan it with WhatsApp.');
+                    pollPairingStatus();
+                } else {
+                    const data = await response.json();
+                    document.getElementById('pairingLoading').classList.remove('active');
+                    showError(data.error || 'Failed to generate QR code');
+                }
+            } catch (error) {
+                document.getElementById('pairingLoading').classList.remove('active');
+                showError('Failed to connect to server');
+                console.error('Error:', error);
+            }
+        }
+
+        async function pollPairingStatus() {
+            const interval = setInterval(async () => {
+                try {
+                    const response = await fetch('/status');
+                    const data = await response.json();
+
+                    if (data.paired) {
+                        clearInterval(interval);
+                        window.location.reload();
+                    }
+                } catch (error) {
+                    console.error('Polling error:', error);
+                }
+            }, 3000);
+
+            setTimeout(() => clearInterval(interval), 300000);
+        }
+
+        // Load commands from API
+        async function loadCommands() {
+            try {
+                const response = await fetch('/api/commands');
+                allCommands = await response.json();
+                
+                displayCommands(allCommands);
+                setupCategoryFilter();
+            } catch (error) {
+                console.error('Error loading commands:', error);
+                document.getElementById('commandsGrid').innerHTML = '<p style="text-align: center; color: var(--text-secondary);">Failed to load commands</p>';
+            }
+        }
+
+        function displayCommands(commands) {
+            const grid = document.getElementById('commandsGrid');
+            grid.innerHTML = '';
+
+            if (commands.length === 0) {
+                grid.innerHTML = '<p style="text-align: center; color: var(--text-secondary); grid-column: 1/-1;">No commands found</p>';
+                return;
+            }
+
+            commands.forEach(cmd => {
+                const card = document.createElement('div');
+                card.className = 'command-card';
+                card.innerHTML = `
+                    <div class="command-name">${cmd.fullCommand}</div>
+                    <span class="command-category">${cmd.category}</span>
+                    <div class="command-description">${cmd.description}</div>
+                    <div class="command-access ${cmd.accessLevel}">${cmd.accessLevel === 'public' ? '🌐 Public' : '🔒 Private'}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function setupCategoryFilter() {
+            const categories = [...new Set(allCommands.map(cmd => cmd.category))];
+            const filterContainer = document.getElementById('categoryFilter');
+            
+            categories.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.className = 'category-btn';
+                btn.textContent = cat;
+                btn.onclick = () => filterByCategory(cat);
+                filterContainer.appendChild(btn);
+            });
+        }
+
+        function filterByCategory(category) {
+            currentCategory = category;
+            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const filtered = category === 'all' 
+                ? allCommands 
+                : allCommands.filter(cmd => cmd.category === category);
+            
+            displayCommands(filtered);
+        }
+
+        function filterCommands() {
+            const search = document.getElementById('commandSearch').value.toLowerCase();
+            const filtered = allCommands.filter(cmd => 
+                cmd.name.toLowerCase().includes(search) || 
+                cmd.description.toLowerCase().includes(search) ||
+                cmd.category.toLowerCase().includes(search)
+            );
+
+            if (currentCategory !== 'all') {
+                const categoryFiltered = filtered.filter(cmd => cmd.category === currentCategory);
+                displayCommands(categoryFiltered);
+            } else {
+                displayCommands(filtered);
+            }
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.textContent = message;
+            errorEl.classList.add('active');
+        }
+
+        function showSuccess(message) {
+            const successEl = document.getElementById('successMessage');
+            successEl.textContent = message;
+            successEl.classList.add('active');
+        }
+
+        function hideMessages() {
+            document.getElementById('errorMessage').classList.remove('active');
+            document.getElementById('successMessage').classList.remove('active');
+        }
+
+        window.addEventListener('load', checkStatus);
+    </script>
+</body>
+</html>
