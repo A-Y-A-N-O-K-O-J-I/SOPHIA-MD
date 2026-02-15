@@ -7,6 +7,7 @@ bin/
 temp/
 lib/database/
 sessions.db
+sessions.db-journal
 # managed by open-wa
 **.data.json
 **.node-persist**

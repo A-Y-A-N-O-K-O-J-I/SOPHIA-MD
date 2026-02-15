@@ -54,13 +54,9 @@ sophia({
         
         // Project root (one level up from commands)
         const projectRootDir = path.resolve(commandDir, '..');
-        await console.wa(projectRootDir,message)
         // Explicitly set the main script path
         const mainScriptPath = path.resolve(projectRootDir, 'index.js');
-        await console.wa(mainScriptPath,message)
 
-        console.log('Project Root:', projectRootDir);
-        console.log('Main Script Path:', mainScriptPath);
 
         console.log('Restarting the bot...');
         await sock.sendMessage(message.key.remoteJid, { text: 'Bot is restarting... 🔄' });
