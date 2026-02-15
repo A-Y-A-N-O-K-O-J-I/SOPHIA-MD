@@ -3,15 +3,15 @@ global.__filename = __filename;
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
-const {generateQR}  = require("./qr");
-const pairRouter = require("./pair");
+const {generateQR}  = require("./lib/qr");
+const pairRouter = require("./lib/pair");
 const {
   initializeState,
   getBotState,
   isPaired,
 } = require("./lib/botState");
 const apiRouter = require("./lib/apiRoutes"); // API routes for commands
-const { startBot } = require("./connectionLogic");
+const { startBot } = require("./lib/connectionLogic");
 const config = require("./config");
 require("dotenv").config();
 require("module-alias/register");
