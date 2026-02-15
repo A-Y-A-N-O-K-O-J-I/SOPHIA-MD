@@ -1,3 +1,5 @@
+global.__dirname = __dirname;
+global.__filename = __filename;
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
@@ -12,8 +14,6 @@ const apiRouter = require("./lib/apiRoutes"); // API routes for commands
 const { startBot } = require("./connectionLogic");
 const config = require("./config");
 require("dotenv").config();
-global.__dirname = __dirname;
-global.__filename = __filename;
 require("module-alias/register");
 process.once("uncaughtException", error => {
   console.log("we got this error", error);
