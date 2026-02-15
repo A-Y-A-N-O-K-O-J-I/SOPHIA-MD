@@ -6,10 +6,11 @@ local_storage/
 bin/
 temp/
 lib/database/
-sessions.db
-sessions.db-journal
 # managed by open-wa
 **.data.json
 **.node-persist**
 **_IGNORE_**
 # end managed by open-wa
+sessions.db
+lib/bot-state.json
+bot-state.json
