@@ -15,9 +15,9 @@ const config = require("./config");
 require("dotenv").config();
 require("./lib/mediaHelper");
 require("module-alias/register");
-if(fs.existsSync("./lib/database")){
-  fs.mkdirSync("./lib/database")
-}
+const dbPath = path.join(__dirname, "lib", "database")
+console.log(dbPath)
+fs.mkdirSync(dbPath, { recursive: true });
 process.once("uncaughtException", error => {
   console.log("we got this error", error);
 });
