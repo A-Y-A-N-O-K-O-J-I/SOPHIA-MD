@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const fs = require("fs");
 const {generateQR}  = require("./lib/qr");
 const pairRouter = require("./lib/pair");
 const {
@@ -12,7 +13,11 @@ const apiRouter = require("./lib/apiRoutes"); // API routes for commands
 const { startBot } = require("./lib/connectionLogic");
 const config = require("./config");
 require("dotenv").config();
+require("./lib/mediaHelper");
 require("module-alias/register");
+if(fs.existsSync("./lib/database")){
+  fs.mkdirSync("./lib/database")
+}
 process.once("uncaughtException", error => {
   console.log("we got this error", error);
 });

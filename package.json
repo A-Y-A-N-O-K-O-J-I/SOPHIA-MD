@@ -1,15 +1,15 @@
 {
   "name": "SOPHIA-MD",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "WhatsApp bot inspired by sophia",
   "main": "index.js",
   "scripts": {
-    "start": "pm2 start . --attach --name SOPHIA-MD",
-    "run": "pm2 start . --deep-monitoring --attach --name SOPHIA-MD",
-    "stop": "pm2 stop SOPHIA-MD",
-    "restart": "pm2 restart SOPHIA-MD",
-    "delete": "pm2 delete SOPHIA-MD",
-    "logs": "pm2 logs SOPHIA-MD",
+    "start": "pm2 start . --attach --name SOPHIA-MD4",
+    "run": "pm2 start . --deep-monitoring --attach --name SOPHIA-MD4",
+    "stop": "pm2 stop SOPHIA-MD4",
+    "restart": "pm2 restart SOPHIA-MD4",
+    "delete": "pm2 delete SOPHIA-MD4",
+    "logs": "pm2 logs SOPHIA-MD4",
     "postinstall": "echo 'Post-installation complete! Run npm start to launch SOPHIA-MD.'"
   },
   "author": "Ayanokoji",
