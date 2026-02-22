@@ -19,7 +19,7 @@ const dbPath = path.join(__dirname, "lib", "database")
 console.log(dbPath)
 fs.mkdirSync(dbPath, { recursive: true });
 process.once("uncaughtException", error => {
-  console.log("we got this error", error);
+  console.log("uncaughtException:", error);
 });
 
 process.once("unhandledRejection", error => {
